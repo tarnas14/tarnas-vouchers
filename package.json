@@ -1,0 +1,11 @@
+{
+  "name": "tarnas-vouchers",
+  "version": "0.0.1",
+  "description": "",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js"
+  },
+  "author": "tarnas",
+  "license": "ISC"
+}
