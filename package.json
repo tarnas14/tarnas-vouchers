@@ -4,8 +4,15 @@
   "description": "",
   "main": "server/index.js",
   "scripts": {
-    "start": "node server/index.js"
+    "start": "node server/index.js",
+    "start-mongo": "docker run --rm --name vouchers-mongo -p 127.0.0.1:27017:27017 mongo",
+    "stop-mongo": "docker stop vouchers-mongo && docker rm vouhcers-mongo"
   },
   "author": "tarnas",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.16.1",
+    "express": "^4.14.1",
+    "mongoose": "^4.8.3"
+  }
 }

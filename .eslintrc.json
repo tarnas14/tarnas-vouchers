@@ -13,7 +13,7 @@
   ],
 
   "rules": {
-    "indent": 2,
+    "indent": ["error", 2],
 
     "comma-dangle": [1, "always-multiline"],
     "no-cond-assign": 1,
@@ -140,7 +140,7 @@
     "padded-blocks": 0,
     "quote-props": 0,
     "quotes": [1, "single", "avoid-escape"],
-    "semi": [2, "always"],
+    "semi": [0],
     "sort-vars": 0,
     "space-before-function-paren": 1,
     "space-before-blocks": 1,
