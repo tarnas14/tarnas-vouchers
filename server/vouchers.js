@@ -46,7 +46,6 @@ const getModel = mongoose => {
 const vouchers = mongoose => {
   const Voucher = getModel(mongoose)
 
-  const acceptableCount = count => count >= 1 && count <= 1000
   const getCodes = vs => vs.map(v => v.code)
   const isValid = voucher => voucher.usesLeft > 0
   const prepareVoucherRepresentation = voucher => ({
@@ -78,21 +77,57 @@ const vouchers = mongoose => {
       })
   }
 
-  const create = (req, res) => { 
-    const {discountType, discountValue, uses, campaign, count = 1} = req.body
+  const validateCreationPayload = payload => {
+    const results = []
 
-    if (!acceptableCount(count)) {
-      res.sendStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    const errors = {
+      invalidCount: 'Invalid voucher count specified',
+      invalidDiscountType: 'Discount Type not recognized',
+      invalidDiscountValue: 'Discount Value not valid',
+      invalidUseCount: 'Voucher should be usable at least once',
+    }
+
+    if (!_.isNumber(payload.count) || payload.count < 1 || payload.count > 1000) {
+      results.push(errors.invalidCount)
+    }
+
+    if (![0, 1].includes(payload.discountType)) {
+      results.push(errors.invalidDiscountType)
+    }
+
+    if (!_.isNumber(payload.discountValue) || payload.discountValue < 0) {
+      results.push(errors.invalidDiscountValue)
+    }
+
+    if (!_.isNumber(payload.uses) || payload.uses < 1) {
+      results.push(errors.invalidUseCount)
+    }
+
+    return results
+  }
+
+  const create = (req, res) => {
+    const payload = Object.assign({}, req.body)
+    payload.count = payload.count || 1
+
+    const validationResults = validateCreationPayload(payload)
+
+    if (validationResults.length) {
+      res.status(HttpStatus.UNPROCESSABLE_ENTITY)
+      res.send({
+        message: 'Invalid payload',
+        validationErrors: validationResults,
+      })
 
       return
     }
 
-    const vouchersToCreate = _.range(count).map(() => ({
-      campaign,
-      discountType,
-      discountValue,
-      code: codeGenerator.forCampaign(campaign),
-      usesLeft: uses,
+    const vouchersToCreate = _.range(payload.count).map(() => ({
+      campaign: payload.campaign,
+      discountType: payload.discountType,
+      discountValue: payload.discountValue,
+      code: codeGenerator.forCampaign(payload.campaign),
+      usesLeft: payload.uses,
     }))
 
     Voucher.create(vouchersToCreate, (error, createdVouchers) => {
