@@ -60,7 +60,10 @@ const vouchers = mongoose => {
 
     const vouchersToCreate = _.range(count).map(() => ({
       campaign,
+      discountType,
+      discountValue,
       code: codeGenerator.forCampaign(campaign),
+      usesLeft: uses,
     }))
 
     Voucher.create(vouchersToCreate, (error, createdVouchers) => {
