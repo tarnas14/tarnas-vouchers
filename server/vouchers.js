@@ -174,7 +174,7 @@ const vouchers = mongoose => {
 
   const use = (req, res) => {
     getVoucherHandler(req, res, retrievedVoucher => {
-      if (!isValid(retrievedVoucher)) {
+      if (!isUsable(retrievedVoucher)) {
         res.status(HttpStatus.UNPROCESSABLE_ENTITY)
         res.send(ERRORS.UsingInvalidVoucher)
 
