@@ -15,7 +15,7 @@ class App extends Component {
   }
 
   buy (productId) {
-    if (!this.state.products.includes(p => p.id === productId)) {
+    if (!this.state.products.find(p => p.id === productId)) {
       this.setState({
         error: `Product with id ${productId} was not found.`
       })
