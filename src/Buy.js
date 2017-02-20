@@ -72,6 +72,7 @@ class Buy extends Component {
         <VoucherCodeInput
           applyVoucher={this.applyVoucher}
         ></VoucherCodeInput>
+        <button onClick={this.props.cancel}>cancel</button>
         <button onClick={this.buyItem}>BUY{voucher ? '' : ' without redeeming a voucher'}</button>
       </div>
     )

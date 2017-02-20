@@ -7,11 +7,14 @@ import getProducts from './productsService'
 class App extends Component {
   constructor (props) {
     super(props)
-    this.buy = this.buy.bind(this)
-    this.productBought = this.productBought.bind(this)
+
     this.state = {
       products: getProducts()
     }
+    
+    this.buy = this.buy.bind(this)
+    this.productBought = this.productBought.bind(this)
+    this.cancelBuying = this.cancelBuying.bind(this)
   }
 
   buy (productId) {
@@ -35,6 +38,12 @@ class App extends Component {
     }))
   }
 
+  cancelBuying () {
+    this.setState({
+      buying: null
+    })  
+  }
+
   render() {
     const {buying, products, error} = this.state
     const productToBuy = buying ? this.state.products.find(p => p.id === buying) : null
@@ -52,6 +61,7 @@ class App extends Component {
             ? (
               <Buy
                 product={productToBuy}
+                cancel={this.cancelBuying}
                 productBought={this.productBought}
               ></Buy>
               )
