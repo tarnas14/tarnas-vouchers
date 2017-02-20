@@ -8,6 +8,27 @@ const getVoucher = voucherCode => new Promise((resolve, reject) => {
   }), 1000)
 })
 
+const DISCOUNTS = {
+  Percentage: 0,
+  Value: 1,
+}
+
+const buildDiscount = voucher => {
+  if (voucher.discountType === DISCOUNTS.Percentage) {
+    return price => (1 - (voucher.discountValue / 100)) * price
+  }
+
+  return price => price - voucher.discountValue
+}
+
+const buildDiscountRepresentation = voucher => {
+  if (voucher.discountType === DISCOUNTS.Percentage) {
+    return `${voucher.discountValue}%`
+  }
+
+  return `$${voucher.discountValue}`
+}
+
 class VoucherCodeInput extends Component {
   constructor (props) {
     super(props)
@@ -46,7 +67,12 @@ class VoucherCodeInput extends Component {
 
         this.setState({
           loading: false,
-          activeVoucher: 'some%',
+          activeVoucher: buildDiscountRepresentation(voucher),
+        })
+
+        this.props.applyVoucher({
+          discount: buildDiscount(voucher),
+          voucherCode: voucher.code
         })
       })
       .catch(e => console.log(e))
