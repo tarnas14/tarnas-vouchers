@@ -48,6 +48,35 @@ const vouchers = mongoose => {
 
   const acceptableCount = count => count >= 1 && count <= 1000
   const getCodes = vs => vs.map(v => v.code)
+  const isValid = voucher => voucher.usesLeft > 0
+  const prepareVoucherRepresentation = voucher => ({
+    campaign: voucher.campaign,
+    code: voucher.code,
+    discountValue: voucher.discountValue,
+    discountType: voucher.discountType,
+    valid: isValid(voucher),
+  })
+
+  const getVoucherHandler = (req, res, voucherHandler) => {
+    Voucher
+      .findOne({code: req.params.code})
+      .exec((error, retrievedVoucher) => {
+        if (error) {
+          res.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          res.send(error.message)
+
+          return
+        }
+
+        if (!retrievedVoucher) {
+          res.sendStatus(HttpStatus.NOT_FOUND)
+
+          return
+        }
+
+        voucherHandler(retrievedVoucher)
+      })
+  }
 
   const create = (req, res) => { 
     const {discountType, discountValue, uses, campaign, count = 1} = req.body
@@ -81,71 +110,32 @@ const vouchers = mongoose => {
     })
   }
 
-  const isValid = voucher => voucher.usesLeft > 0
-
-  const prepareVoucherRepresentation = voucher => ({
-    campaign: voucher.campaign,
-    code: voucher.code,
-    discountValue: voucher.discountValue,
-    discountType: voucher.discountType,
-    valid: isValid(voucher),
-  })
 
   const getSingle = (req, res) => {
-    Voucher
-      .find({code: req.params.code})
-      .exec((error, retrievedVouchers) => {
-        if (error) {
-          res.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          res.send(error.message)
-
-          return
-        }
-
-        if (!retrievedVouchers.length) {
-          res.sendStatus(HttpStatus.NOT_FOUND)
-
-          return
-        }
-
-        res.json(prepareVoucherRepresentation(retrievedVouchers[0]))
-      })
+    getVoucherHandler(req, res, retrievedVoucher => {
+      res.json(prepareVoucherRepresentation(retrievedVoucher))
+    })
   }
 
   const use = (req, res) => {
-    Voucher
-      .findOne({code: req.params.code})
-      .exec((error, retrievedVoucher) => {
-        if (error) {
+    getVoucherHandler(req, res, retrievedVoucher => {
+      if (!isValid(retrievedVoucher)) {
+        res.status(HttpStatus.UNPROCESSABLE_ENTITY)
+        res.send(ERRORS.UsingInvalidVoucher)
+
+        return
+      }
+
+      retrievedVoucher.usesLeft -= 1
+      retrievedVoucher.save(updateError => {
+        if (updateError) {
           res.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          res.send(error.message)
-
-          return
+          res.send(updateError.message)
         }
 
-        if (!retrievedVoucher) {
-          res.sendStatus(HttpStatus.NOT_FOUND)
-
-          return
-        }
-
-        if (!isValid(retrievedVoucher)) {
-          res.status(HttpStatus.UNPROCESSABLE_ENTITY)
-          res.send(ERRORS.UsingInvalidVoucher)
-
-          return
-        }
-
-        retrievedVoucher.usesLeft -= 1
-        retrievedVoucher.save(updateError => {
-          if (updateError) {
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            res.send(error.message)
-          }
-
-          res.sendStatus(HttpStatus.NO_CONTENT)
-        })
+        res.sendStatus(HttpStatus.NO_CONTENT)
       })
+    })
   }
 
   return {
