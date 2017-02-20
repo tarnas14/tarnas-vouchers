@@ -43,7 +43,6 @@ const getModel = mongoose => {
   return mongoose.model('Voucher', voucherSchema)
 }
 
-
 const vouchers = mongoose => {
   const Voucher = getModel(mongoose)
 
