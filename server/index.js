@@ -1,6 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
+const path = require('path')
 
 const {authorizedHandler} = require('./authorization')
 const vouchersFactory = require('./vouchers')
@@ -19,6 +20,10 @@ const vouchers = vouchersFactory(mongoose)
 app.post('/api/vouchers/', authorizedHandler(vouchers.create))
 app.get('/api/vouchers/:code', authorizedHandler(vouchers.getSingle))
 app.post('/api/vouchers/:code', authorizedHandler(vouchers.use))
+
+const CLIENT_BUILD_PATH = path.resolve(__dirname, '../build')
+app.use('/', express.static(CLIENT_BUILD_PATH))
+app.get('*', (req, res) => res.sendFile(path.resolve(__dirname, '../build', 'index.html')))
 
 app.listen(PORT, () => {
   console.log(`listening on port ${PORT}`)

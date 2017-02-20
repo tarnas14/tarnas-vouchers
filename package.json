@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node server/index.js",
     "start-mongo": "docker run --rm --name vouchers-mongo -p 127.0.0.1:27017:27017 mongo",
-    "stop-mongo": "docker stop vouchers-mongo && docker rm vouhcers-mongo"
+    "stop-mongo": "docker stop vouchers-mongo && docker rm vouchers-mongo",
+    "build": "react-scripts build",
+    "start-client": "react-scripts start"
   },
   "author": "tarnas",
   "license": "ISC",
@@ -16,6 +18,9 @@
     "http-status": "^1.0.1",
     "lodash": "^4.17.4",
     "moment": "^2.17.1",
-    "mongoose": "^4.8.3"
+    "mongoose": "^4.8.3",
+    "react": "^15.4.2",
+    "react-dom": "^15.4.2",
+    "react-scripts": "^0.9.0"
   }
 }
