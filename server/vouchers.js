@@ -39,10 +39,12 @@ const getModel = mongoose => {
   return mongoose.model('Voucher', voucherSchema)
 }
 
-const acceptableCount = count => count >= 1 && count <= 1000
 
 const vouchers = mongoose => {
   const Voucher = getModel(mongoose)
+
+  const acceptableCount = count => count >= 1 && count <= 1000
+  const getCodes = vs => vs.map(v => v.code)
 
   const create = (req, res) => { 
     const {discountType, discountValue, uses, campaign, count = 1} = req.body
@@ -58,7 +60,7 @@ const vouchers = mongoose => {
       code: codeGenerator.forCampaign(campaign),
     }))
 
-    Voucher.create(vouchersToCreate, error => {
+    Voucher.create(vouchersToCreate, (error, createdVouchers) => {
       if (error) {
         res.status(HttpStatus.INTERNAL_SERVER_ERROR)
         res.send({
@@ -68,7 +70,8 @@ const vouchers = mongoose => {
         return
       }
 
-      res.sendStatus(HttpStatus.CREATED)
+      res.status(HttpStatus.CREATED)
+      res.send(getCodes(createdVouchers))
     })
   }
 
