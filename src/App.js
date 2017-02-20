@@ -1,25 +1,43 @@
 import React, { Component } from 'react'
-import ProductGrid from './ProductGrid'
 
+import ProductGrid from './ProductGrid'
+import Buy from './Buy'
 import getProducts from './productsService'
 
 class App extends Component {
   constructor (props) {
     super(props)
     this.buy = this.buy.bind(this)
+    this.finalizeTransaction = this.finalizeTransaction.bind(this)
     this.state = {
       products: getProducts()
     }
   }
 
   buy (productId) {
+    if (!this.state.products.includes(p => p.id === productId)) {
+      this.setState({
+        error: `Product with id ${productId} was not found.`
+      })
+
+      return
+    }
+
     this.setState({
       buying: productId
     })
   }
 
+  finalizeTransaction () {
+    this.setState({
+      buying: null
+    })
+  }
+
   render() {
-    const {buying, products} = this.state;
+    const {buying, products, error} = this.state
+    const productToBuy = buying ? this.state.products.find(p => p.id === buying) : null
+
     return (
       <div className="mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-color--grey-100">
         <header className="mdl-layout__header mdl-color--grey-100 mdl-color-text--grey-800">
@@ -28,8 +46,16 @@ class App extends Component {
           </div>
         </header>
         <main className="mdl-layout__content">
-          {buying ? <div>hello, buying product {buying}</div> : null}
           <ProductGrid products={products} buy={this.buy}></ProductGrid>
+          {buying
+            ? (
+              <Buy
+                product={productToBuy}
+                finalize={this.finalizeTransaction}
+              ></Buy>
+              )
+            : null}
+          {error ? <p>ERROR: {error}</p> : null}
         </main>
         <footer className="mdl-mini-footer">
           <div className="mdl-mini-footer__left-section">
