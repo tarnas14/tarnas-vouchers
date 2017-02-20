@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import HttpStatus from 'http-status'
+import {Textfield, Button} from 'react-mdl'
 
 const vouchersEndpoint = 'http://localhost:3001/api/vouchers/'
 const secretKey = 'mellon'
@@ -113,9 +114,13 @@ class VoucherCodeInput extends Component {
   renderInput (code) {
     return (
       <div>
-        use your voucher code:
-        <input type="text" value={code} onChange={this.handleCodeChange} />
-        <button type="submit" onClick={this.validateVoucher}>Use it</button>
+        <Textfield
+          onChange={this.handleCodeChange}
+          label="use your voucher code"
+          floatingLabel
+          style={{width: '200px'}}
+        />
+        <Button type="submit" onClick={this.validateVoucher}>Use voucher</Button>
       </div>
     )
   }
@@ -130,13 +135,16 @@ class VoucherCodeInput extends Component {
 
   renderError (error) {
     return (
-      <p>ERROR: {error} <button onClick={this.resetState}>try again</button></p>
+      <div>
+        <p style={{color: '#b91d47'}}>{error} </p>
+        <Button onClick={this.resetState}>try again</Button>
+      </div>
     )
   }
 
   renderActiveVoucher (voucher) {
     return (
-      <p>Elligible for <strong>{voucher}</strong> discount!</p>
+      <p style={{color: '#00a300'}}>Elligible for <strong>{voucher}</strong> discount!</p>
     )
   }
 
