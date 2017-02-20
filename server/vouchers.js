@@ -53,17 +53,16 @@ const vouchers = mongoose => {
       return
     }
 
-    const vouchersToCreate = _.range(count).map(_ => ({
+    const vouchersToCreate = _.range(count).map(() => ({
       campaign,
-      code: codeGenerator.forCampaign(campaign)
+      code: codeGenerator.forCampaign(campaign),
     }))
 
     Voucher.create(vouchersToCreate, error => {
       if (error) {
-        res.status(HttpStatus.BAD_REQUEST)
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR)
         res.send({
           message: error.message,
-          validationErrors: error.errors
         })
 
         return
@@ -73,8 +72,40 @@ const vouchers = mongoose => {
     })
   }
 
+  const prepareVoucherForClient = voucher => ({
+    campaign: voucher.campaign,
+    code: voucher.code,
+    discountValue: voucher.discountValue,
+    discountType: voucher.discountType,
+    valid: voucher.usesLeft > 0,
+  })
+
+  const getSingle = (req, res) => {
+    Voucher
+      .find({code: req.params.code})
+      .exec((error, retrievedVouchers) => {
+        if (error) {
+          res.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          res.send({
+            message: error.message,
+          })
+
+          return
+        }
+
+        if (!retrievedVouchers.length) {
+          res.sendStatus(HttpStatus.NOT_FOUND)
+
+          return
+        }
+
+        res.json(prepareVoucherForClient(retrievedVouchers[0]))
+      })
+  }
+
   return {
-    create
+    create,
+    getSingle,
   }
 }
 
