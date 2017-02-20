@@ -3,6 +3,7 @@ import React, { Component } from 'react'
 import ProductGrid from './ProductGrid'
 import Buy from './Buy'
 import getProducts from './productsService'
+import Error from './Error'
 
 class App extends Component {
   constructor (props) {
@@ -66,7 +67,7 @@ class App extends Component {
               ></Buy>
               )
             : null}
-          {error ? <p>ERROR: {error}</p> : null}
+          {error ? <Error message={error}></Error> : null}
         </main>
         <footer className="mdl-mini-footer">
           <div className="mdl-mini-footer__left-section">

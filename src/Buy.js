@@ -53,10 +53,14 @@ class Buy extends Component {
       return
     }
 
+    this.setState({
+      loading: true
+    });
+
     useVoucher(this.state.voucher.code)
       .then(
         () => this.props.productBought(this.props.product.id),
-        error => this.setState({error})
+        error => this.setState({loading: false, error})
       )
   }
 

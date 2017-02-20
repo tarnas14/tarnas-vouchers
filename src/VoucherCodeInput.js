@@ -2,6 +2,8 @@ import React, { Component } from 'react'
 import HttpStatus from 'http-status'
 import {Textfield, Button} from 'react-mdl'
 
+import Error from './Error'
+
 const vouchersEndpoint = 'http://localhost:3001/api/vouchers/'
 const secretKey = 'mellon'
 
@@ -136,7 +138,7 @@ class VoucherCodeInput extends Component {
   renderError (error) {
     return (
       <div>
-        <p style={{color: '#b91d47'}}>{error} </p>
+        <Error message={error}></Error>
         <Button onClick={this.resetState}>try again</Button>
       </div>
     )
