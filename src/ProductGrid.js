@@ -9,9 +9,15 @@ const ProductGrid = props => (
         </div>
         <div className="mdl-card__supporting-text">{product.description}</div>
         <div className="mdl-card__actions mdl-card--border">
-          <a className="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" onClick={props.buy.bind(null, product.id)}>
-            BUY
-          </a>
+          {
+            product.sold 
+             ? (<span>SOLD OUT</span>)
+             : (
+               <a className="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" onClick={props.buy.bind(null, product.id)}>
+               BUY
+               </a>
+             )
+          }
         </div>
         <div className="mdl-card__menu">
           <span className="mdl-chip">

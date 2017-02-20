@@ -8,7 +8,7 @@ class App extends Component {
   constructor (props) {
     super(props)
     this.buy = this.buy.bind(this)
-    this.finalizeTransaction = this.finalizeTransaction.bind(this)
+    this.productBought = this.productBought.bind(this)
     this.state = {
       products: getProducts()
     }
@@ -28,10 +28,11 @@ class App extends Component {
     })
   }
 
-  finalizeTransaction () {
-    this.setState({
-      buying: null
-    })
+  productBought (productId) {
+    this.setState(oldState => ({
+      buying: null,
+      products: oldState.products.map(product => product.id === productId ? Object.assign(product, {sold: true}) : product)
+    }))
   }
 
   render() {
@@ -51,7 +52,7 @@ class App extends Component {
             ? (
               <Buy
                 product={productToBuy}
-                finalize={this.finalizeTransaction}
+                productBought={this.productBought}
               ></Buy>
               )
             : null}

@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import HttpStatus from 'http-status'
 
 const vouchersEndpoint = 'http://localhost:3001/api/vouchers/'
+const secretKey = 'mellon'
 
 const getVoucher = voucherCode => new Promise((resolve, reject) => {
   const handleFetchResolve = resp => {
@@ -23,7 +24,7 @@ const getVoucher = voucherCode => new Promise((resolve, reject) => {
   fetch(`${vouchersEndpoint}${voucherCode}`, {
     method: 'GET',
     headers: {
-      'Super-Secret-Authorization-Key': 'mellon'
+      'Super-Secret-Authorization-Key': secretKey
     }
   })
     .then(handleFetchResolve, () => reject('Could not communicate with Voucher api, please try again later'))
@@ -52,14 +53,16 @@ const buildDiscountRepresentation = voucher => {
   return `$${voucher.discountValue}`
 }
 
+const getInitialState = () => ({
+  code: '',
+  error: null,
+  activeVoucher: null,
+})
+
 class VoucherCodeInput extends Component {
   constructor (props) {
     super(props)
-    this.state = {
-      code: '',
-      error: null,
-      activeVoucher: null,
-    }
+    this.state = getInitialState()
 
     this.handleCodeChange = this.handleCodeChange.bind(this)
     this.validateVoucher = this.validateVoucher.bind(this)
@@ -67,6 +70,7 @@ class VoucherCodeInput extends Component {
     this.renderError = this.renderError.bind(this)
     this.renderActiveVoucher = this.renderActiveVoucher.bind(this)
     this.renderLoadingIndicator = this.renderLoadingIndicator.bind(this)
+    this.resetState = this.resetState.bind(this)
   }
 
   handleCodeChange (event) {
@@ -79,7 +83,6 @@ class VoucherCodeInput extends Component {
     })
     getVoucher(this.state.code)
       .then(voucher => {
-        console.log(voucher)
         if (!voucher.usable) {
           this.setState({
             loading: false,
@@ -96,7 +99,7 @@ class VoucherCodeInput extends Component {
 
         this.props.applyVoucher({
           discount: buildDiscount(voucher),
-          voucherCode: voucher.code
+          code: voucher.code
         })
       }, getVoucherError => {
         this.setState({
@@ -121,9 +124,13 @@ class VoucherCodeInput extends Component {
     return (<p>loading...</p>)
   }
 
+  resetState () {
+    this.setState(getInitialState())
+  }
+
   renderError (error) {
     return (
-      <p>ERROR: {error}</p>
+      <p>ERROR: {error} <button onClick={this.resetState}>try again</button></p>
     )
   }
 
