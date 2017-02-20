@@ -1,4 +1,4 @@
 export default {
-  vouchersEndpoint: 'http://localhost:3001/api/vouchers/',
+  vouchersEndpoint: 'https://calm-falls-70419.herokuapp.com/api/vouchers/',
   secretKey: 'mellon',
 }
