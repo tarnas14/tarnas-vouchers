@@ -1,8 +1,10 @@
 const HttpStatus = require('http-status')
 const _ = require('lodash')
+const moment = require('moment')
 
 const codeGeneratorFactory = require('./codeGenerator')
 const codeGenerator = codeGeneratorFactory()
+const campaigns = require('./campaigns')
 
 const DISCOUNTS = {
   Percentage: 0,
@@ -11,6 +13,10 @@ const DISCOUNTS = {
 
 const ERRORS = {
   UsingInvalidVoucher: 'Provided voucher is invalid',
+  InvalidCount: 'Invalid voucher count specified',
+  InvalidDiscountType: 'Discount Type not recognized',
+  InvalidDiscountValue: 'Discount Value not valid',
+  InvalidUseCount: 'Voucher should be usable at least once',
 }
 
 const getModel = mongoose => {
@@ -38,6 +44,12 @@ const getModel = mongoose => {
       default: 10,
       required: [true],
     },
+    usableFrom: {
+      type: Date,
+    },
+    expiresAt: {
+      type: Date,
+    },
   })
 
   return mongoose.model('Voucher', voucherSchema)
@@ -47,13 +59,14 @@ const vouchers = mongoose => {
   const Voucher = getModel(mongoose)
 
   const getCodes = vs => vs.map(v => v.code)
-  const isValid = voucher => voucher.usesLeft > 0
+  const usableNow = ({usableFrom, expiresAt}) => moment.utc().isBetween(usableFrom, expiresAt, 'days', '[]') 
+  const isUsable = voucher => voucher.usesLeft > 0 && usableNow(voucher)
   const prepareVoucherRepresentation = voucher => ({
     campaign: voucher.campaign,
     code: voucher.code,
     discountValue: voucher.discountValue,
     discountType: voucher.discountType,
-    valid: isValid(voucher),
+    usable: isUsable(voucher),
   })
 
   const getVoucherHandler = (req, res, voucherHandler) => {
@@ -80,35 +93,32 @@ const vouchers = mongoose => {
   const validateCreationPayload = payload => {
     const results = []
 
-    const errors = {
-      invalidCount: 'Invalid voucher count specified',
-      invalidDiscountType: 'Discount Type not recognized',
-      invalidDiscountValue: 'Discount Value not valid',
-      invalidUseCount: 'Voucher should be usable at least once',
-    }
-
     if (!_.isNumber(payload.count) || payload.count < 1 || payload.count > 1000) {
-      results.push(errors.invalidCount)
+      results.push(ERRORS.InvalidCount)
     }
 
-    if (![0, 1].includes(payload.discountType)) {
-      results.push(errors.invalidDiscountType)
+    if (![DISCOUNTS.Percentage, DISCOUNTS.Value].includes(payload.discountType)) {
+      results.push(ERRORS.InvalidDiscountType)
     }
 
     if (!_.isNumber(payload.discountValue) || payload.discountValue < 0) {
-      results.push(errors.invalidDiscountValue)
+      results.push(ERRORS.InvalidDiscountValue)
     }
 
     if (!_.isNumber(payload.uses) || payload.uses < 1) {
-      results.push(errors.invalidUseCount)
+      results.push(ERRORS.InvalidUseCount)
     }
 
     return results
   }
+  const setDefaultValues = payload => {
+    payload.count = payload.count || 1
+    payload.uses = payload.uses || 1
+  }
 
   const create = (req, res) => {
     const payload = Object.assign({}, req.body)
-    payload.count = payload.count || 1
+    setDefaultValues(payload);
 
     const validationResults = validateCreationPayload(payload)
 
@@ -122,13 +132,13 @@ const vouchers = mongoose => {
       return
     }
 
-    const vouchersToCreate = _.range(payload.count).map(() => ({
+    const vouchersToCreate = _.range(payload.count).map(() => (Object.assign({
       campaign: payload.campaign,
       discountType: payload.discountType,
       discountValue: payload.discountValue,
       code: codeGenerator.forCampaign(payload.campaign),
       usesLeft: payload.uses,
-    }))
+    }, campaigns.createVoucherFor(payload.campaign))))
 
     Voucher.create(vouchersToCreate, (error, createdVouchers) => {
       if (error) {
