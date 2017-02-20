@@ -8,7 +8,7 @@ const {authorizedHandler} = require('./authorization')
 const vouchersFactory = require('./vouchers')
 
 const config = require('./config')
-const PORT = config.PORT || 3000
+const PORT = process.env.PORT || config.PORT || 3000
 
 mongoose.Promise = global.Promise
 mongoose.connect(config.mongoAddress)

@@ -4,7 +4,7 @@
   "description": "",
   "main": "server/index.js",
   "scripts": {
-    "start": "node server/index.js",
+    "start": "react-scripts build && node server/index.js",
     "start-mongo": "docker run --rm --name vouchers-mongo -p 127.0.0.1:27017:27017 mongo",
     "build": "react-scripts build",
     "start-client": "react-scripts start"
