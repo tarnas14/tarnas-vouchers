@@ -66,12 +66,27 @@ const vouchers = mongoose => {
   })
 
   const getVoucherHandler = (req, res, voucherHandler) => {
+    const handleKnownErrors = error => {
+      if (error.name === 'CastError' && error.kind === 'ObjectId' && error.path === '_id') {
+        return {errorStatus: HttpStatus.NOT_FOUND}
+      }
+
+      return {}
+    }
+
     Voucher
       .findById(getId(req.params.code))
       .exec((error, retrievedVoucher) => {
         if (error) {
+          const {errorStatus} = handleKnownErrors(error);
+          if (errorStatus) {
+            res.sendStatus(errorStatus)
+
+            return
+          }
+
           res.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          res.send(error.message)
+          res.send(error)
 
           return
         }
