@@ -1,11 +1,34 @@
 import React, { Component } from 'react'
+import HttpStatus from 'http-status'
+
+const vouchersEndpoint = 'http://localhost:3001/api/vouchers/'
 
 const getVoucher = voucherCode => new Promise((resolve, reject) => {
-  setTimeout(() => resolve({
-    usable: true,
-    discountType: 0,
-    discountValue: 10
-  }), 1000)
+  const handleFetchResolve = resp => {
+    if (resp.status === HttpStatus.NOT_FOUND) {
+      reject('Provided voucher code was not found')
+
+      return
+    }
+
+    if (resp.status !== HttpStatus.OK) {
+      reject(resp.statusText)
+
+      return
+    }
+
+    return resp.json()
+  }
+
+  fetch(`${vouchersEndpoint}${voucherCode}`, {
+    method: 'GET',
+    headers: {
+      'Super-Secret-Authorization-Key': 'mellon'
+    }
+  })
+    .then(handleFetchResolve, () => reject('Could not communicate with Voucher api, please try again later'))
+    .then(jsonResponse => resolve(jsonResponse))
+    .catch(() => reject('This is a weird error. This should not happen in a happy path mvp, please contact tarnas (github in the footer)?')) 
 })
 
 const DISCOUNTS = {
@@ -56,6 +79,7 @@ class VoucherCodeInput extends Component {
     })
     getVoucher(this.state.code)
       .then(voucher => {
+        console.log(voucher)
         if (!voucher.usable) {
           this.setState({
             loading: false,
@@ -73,6 +97,11 @@ class VoucherCodeInput extends Component {
         this.props.applyVoucher({
           discount: buildDiscount(voucher),
           voucherCode: voucher.code
+        })
+      }, getVoucherError => {
+        this.setState({
+          loading: false,
+          error: getVoucherError
         })
       })
       .catch(e => console.log(e))
