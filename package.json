@@ -4,7 +4,7 @@
   "description": "",
   "main": "server/index.js",
   "scripts": {
-    "start": "react-scripts build && node server/index.js",
+    "start": "react-scripts build && forever start server/index.js",
     "start-mongo": "docker run --rm --name vouchers-mongo -p 127.0.0.1:27017:27017 mongo",
     "build": "react-scripts build",
     "start-client": "react-scripts start"
@@ -15,6 +15,7 @@
     "body-parser": "^1.16.1",
     "cors": "^2.8.1",
     "express": "^4.14.1",
+    "forever": "^0.15.3",
     "http-status": "^1.0.1",
     "lodash": "^4.17.4",
     "moment": "^2.17.1",
