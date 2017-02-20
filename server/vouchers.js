@@ -9,6 +9,10 @@ const DISCOUNTS = {
   Value: 1,
 }
 
+const ERRORS = {
+  UsingInvalidVoucher: 'Provided voucher is invalid',
+}
+
 const getModel = mongoose => {
   const voucherSchema = new mongoose.Schema({
     campaign: {
@@ -75,12 +79,14 @@ const vouchers = mongoose => {
     })
   }
 
-  const prepareVoucherForClient = voucher => ({
+  const isValid = voucher => voucher.usesLeft > 0
+
+  const prepareVoucherRepresentation = voucher => ({
     campaign: voucher.campaign,
     code: voucher.code,
     discountValue: voucher.discountValue,
     discountType: voucher.discountType,
-    valid: voucher.usesLeft > 0,
+    valid: isValid(voucher),
   })
 
   const getSingle = (req, res) => {
@@ -89,9 +95,7 @@ const vouchers = mongoose => {
       .exec((error, retrievedVouchers) => {
         if (error) {
           res.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          res.send({
-            message: error.message,
-          })
+          res.send(error.message)
 
           return
         }
@@ -102,13 +106,50 @@ const vouchers = mongoose => {
           return
         }
 
-        res.json(prepareVoucherForClient(retrievedVouchers[0]))
+        res.json(prepareVoucherRepresentation(retrievedVouchers[0]))
+      })
+  }
+
+  const use = (req, res) => {
+    Voucher
+      .findOne({code: req.params.code})
+      .exec((error, retrievedVoucher) => {
+        if (error) {
+          res.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          res.send(error.message)
+
+          return
+        }
+
+        if (!retrievedVoucher) {
+          res.sendStatus(HttpStatus.NOT_FOUND)
+
+          return
+        }
+
+        if (!isValid(retrievedVoucher)) {
+          res.status(HttpStatus.UNPROCESSABLE_ENTITY)
+          res.send(ERRORS.UsingInvalidVoucher)
+
+          return
+        }
+
+        retrievedVoucher.usesLeft -= 1
+        retrievedVoucher.save(updateError => {
+          if (updateError) {
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            res.send(error.message)
+          }
+
+          res.sendStatus(HttpStatus.NO_CONTENT)
+        })
       })
   }
 
   return {
     create,
     getSingle,
+    use,
   }
 }
 

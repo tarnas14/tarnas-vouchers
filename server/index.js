@@ -17,6 +17,7 @@ app.use(bodyParser.urlencoded({extended: true}))
 const vouchers = vouchersFactory(mongoose)
 app.post('/api/vouchers/create', vouchers.create)
 app.get('/api/vouchers/:code', vouchers.getSingle)
+app.post('/api/vouchers/:code', vouchers.use)
 
 app.listen(PORT, () => {
   console.log(`listening on port ${PORT}`)
