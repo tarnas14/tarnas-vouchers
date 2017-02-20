@@ -1,11 +1,11 @@
 import React, { Component } from 'react'
 
 const getVoucher = voucherCode => new Promise((resolve, reject) => {
-  resolve({
+  setTimeout(() => resolve({
     usable: true,
     discountType: 0,
     discountValue: 10
-  })
+  }), 1000)
 })
 
 class VoucherCodeInput extends Component {
@@ -22,6 +22,7 @@ class VoucherCodeInput extends Component {
     this.renderInput = this.renderInput.bind(this)
     this.renderError = this.renderError.bind(this)
     this.renderActiveVoucher = this.renderActiveVoucher.bind(this)
+    this.renderLoadingIndicator = this.renderLoadingIndicator.bind(this)
   }
 
   handleCodeChange (event) {
@@ -29,18 +30,23 @@ class VoucherCodeInput extends Component {
   }
 
   validateVoucher () {
+    this.setState({
+      loading: true
+    })
     getVoucher(this.state.code)
       .then(voucher => {
         if (!voucher.usable) {
           this.setState({
-            error: 'Provided voucher is not usable at this time, we are sorry!'
+            loading: false,
+            error: 'Provided voucher is not usable at this time, we are sorry!',
           })
 
           return
         }
 
         this.setState({
-          activeVoucher: 'some%'
+          loading: false,
+          activeVoucher: 'some%',
         })
       })
       .catch(e => console.log(e))
@@ -56,6 +62,10 @@ class VoucherCodeInput extends Component {
     )
   }
 
+  renderLoadingIndicator () {
+    return (<p>loading...</p>)
+  }
+
   renderError (error) {
     return (
       <p>ERROR: {error}</p>
@@ -69,14 +79,15 @@ class VoucherCodeInput extends Component {
   }
 
   render () {
-    const {code, error, activeVoucher} = this.state
+    const {code, error, activeVoucher, loading} = this.state
 
-    const showInput = !error && !activeVoucher
-    const showError = error
-    const showVoucher = !error && activeVoucher
+    const showInput = !loading && !error && !activeVoucher
+    const showError = !loading && error
+    const showVoucher = !loading && !error && activeVoucher
 
     return (
       <div>
+        {loading ? this.renderLoadingIndicator() : null}
         {showError ? this.renderError(error) : null}
         {showVoucher ? this.renderActiveVoucher(activeVoucher) : null}
         {showInput ? this.renderInput(code) : null}
