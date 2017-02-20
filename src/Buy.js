@@ -4,8 +4,8 @@ import {Dialog, DialogTitle, DialogContent, DialogActions, Button} from 'react-m
 
 import VoucherCodeInput from './VoucherCodeInput'
 
-const vouchersEndpoint = 'http://localhost:3001/api/vouchers/'
-const secretKey = 'mellon'
+import config from './config'
+const {vouchersEndpoint, secretKey} = config
 
 const useVoucher = voucherCode => new Promise((resolve, reject) => {
   const handleFetchResolve = response => {

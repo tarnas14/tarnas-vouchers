@@ -4,8 +4,8 @@ import {Textfield, Button} from 'react-mdl'
 
 import Error from './Error'
 
-const vouchersEndpoint = 'http://localhost:3001/api/vouchers/'
-const secretKey = 'mellon'
+import config from './config'
+const {vouchersEndpoint, secretKey} = config
 
 const getVoucher = voucherCode => new Promise((resolve, reject) => {
   const handleFetchResolve = resp => {
