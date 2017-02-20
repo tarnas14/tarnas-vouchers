@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import HttpStatus from 'http-status'
+import {Dialog, DialogTitle, DialogContent, DialogActions, Button} from 'react-mdl'
 
 import VoucherCodeInput from './VoucherCodeInput'
 
@@ -61,19 +62,24 @@ class Buy extends Component {
 
   render () {
     const {voucher} = this.state
-    const {price} = this.props.product
+    const {price, name} = this.props.product
 
     return (
       <div>
-        <p>buying product {this.props.product.id}</p>
-        <p>
-          Price: <span style={{textDecoration: voucher ? 'line-through' : '' }}>${price}</span> {voucher ? <strong>${voucher.discount(price)}</strong> : null}
-        </p>
-        <VoucherCodeInput
-          applyVoucher={this.applyVoucher}
-        ></VoucherCodeInput>
-        <button onClick={this.props.cancel}>cancel</button>
-        <button onClick={this.buyItem}>BUY{voucher ? '' : ' without redeeming a voucher'}</button>
+        <Dialog open={true} onCancel={this.props.cancel}>
+          <DialogTitle>Buy at <span style={{textDecoration: voucher ? 'line-through' : '' }}>${price}</span> {voucher ? <strong>${voucher.discount(price)}</strong> : null}
+</DialogTitle>
+          <DialogContent>
+            <strong>Buying {name}</strong>
+            <VoucherCodeInput
+              applyVoucher={this.applyVoucher}
+            ></VoucherCodeInput>
+          </DialogContent>
+          <DialogActions>
+            <Button type="button" onClick={this.props.cancel}>Cancel</Button>
+            <Button type="button" colored raised ripple onClick={this.buyItem}>Buy</Button>
+          </DialogActions>
+        </Dialog>
       </div>
     )
   }
