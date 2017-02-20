@@ -2,8 +2,6 @@ const HttpStatus = require('http-status')
 const _ = require('lodash')
 const moment = require('moment')
 
-const codeGeneratorFactory = require('./codeGenerator')
-const codeGenerator = codeGeneratorFactory()
 const campaigns = require('./campaigns')
 
 const DISCOUNTS = {
@@ -22,10 +20,6 @@ const ERRORS = {
 const getModel = mongoose => {
   const voucherSchema = new mongoose.Schema({
     campaign: {
-      type: String,
-      required: [true],
-    },
-    code: {
       type: String,
       required: [true],
     },
@@ -58,12 +52,14 @@ const getModel = mongoose => {
 const vouchers = mongoose => {
   const Voucher = getModel(mongoose)
 
-  const getCodes = vs => vs.map(v => v.code)
+  const getId = voucherCode => voucherCode.split('_').slice(-1)
+  const getCode = v => `${v.campaign}_${v._id}`
+  const getCodes = vs => vs.map(getCode)
   const usableNow = ({usableFrom, expiresAt}) => moment.utc().isBetween(usableFrom, expiresAt, 'days', '[]') 
   const isUsable = voucher => voucher.usesLeft > 0 && usableNow(voucher)
   const prepareVoucherRepresentation = voucher => ({
     campaign: voucher.campaign,
-    code: voucher.code,
+    code: getCode(voucher),
     discountValue: voucher.discountValue,
     discountType: voucher.discountType,
     usable: isUsable(voucher),
@@ -71,7 +67,7 @@ const vouchers = mongoose => {
 
   const getVoucherHandler = (req, res, voucherHandler) => {
     Voucher
-      .findOne({code: req.params.code})
+      .findById(getId(req.params.code))
       .exec((error, retrievedVoucher) => {
         if (error) {
           res.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -136,7 +132,6 @@ const vouchers = mongoose => {
       campaign: payload.campaign,
       discountType: payload.discountType,
       discountValue: payload.discountValue,
-      code: codeGenerator.forCampaign(payload.campaign),
       usesLeft: payload.uses,
     }, campaigns.createVoucherFor(payload.campaign))))
 
