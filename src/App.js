@@ -71,7 +71,7 @@ class App extends Component {
         </main>
         <footer className="mdl-mini-footer">
           <div className="mdl-mini-footer__left-section">
-            2017 by <a href="https://github.com/tarnas14" target="about:blank">tarnas</a>
+            2017 by <a href="https://github.com/tarnas14" target="about:blank">tarnas</a> for project specification see <a href="https://github.com/tarnas14/tarnas-vouchers" target="about:blank">tarnas-vouchers</a>
           </div>
         </footer>
       </div>
