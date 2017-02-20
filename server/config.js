@@ -1,4 +1,3 @@
 module.exports = {
-  mongoAddress: 'localhost:27017',
-  PORT: 3001,
+  mongoAddress: 'mongodb://kotSer:siersciuch@ds145379.mlab.com:45379/tarnas-vouchers',
 }
