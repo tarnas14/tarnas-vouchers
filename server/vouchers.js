@@ -1,4 +1,6 @@
 const HttpStatus = require('http-status')
+const _ = require('lodash')
+
 const codeGeneratorFactory = require('./codeGenerator')
 const codeGenerator = codeGeneratorFactory()
 
@@ -37,20 +39,26 @@ const getModel = mongoose => {
   return mongoose.model('Voucher', voucherSchema)
 }
 
+const acceptableCount = count => count >= 1 && count <= 1000
+
 const vouchers = mongoose => {
   const Voucher = getModel(mongoose)
 
   const create = (req, res) => { 
-    const {discountType, discountValue, uses, campaign} = req.body
+    const {discountType, discountValue, uses, campaign, count = 1} = req.body
 
-    const code = codeGenerator.forCampaign(campaign)
+    if (!acceptableCount(count)) {
+      res.sendStatus(HttpStatus.UNPROCESSABLE_ENTITY)
 
-    const voucher = new Voucher({
+      return
+    }
+
+    const vouchersToCreate = _.range(count).map(_ => ({
       campaign,
-      code
-    })
+      code: codeGenerator.forCampaign(campaign)
+    }))
 
-    voucher.save(error => {
+    Voucher.create(vouchersToCreate, error => {
       if (error) {
         res.status(HttpStatus.BAD_REQUEST)
         res.send({
