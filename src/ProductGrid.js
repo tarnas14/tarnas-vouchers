@@ -3,7 +3,7 @@ import React from 'react'
 const ProductGrid = props => (
   <div className="mdl-grid">
     {props.products.map(product => (
-      <div className="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col">
+      <div className="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col" key={product.id}>
         <div className="mdl-card__title">
           <h2 className="mdl-card__title-text">{product.name}</h2>
         </div>
